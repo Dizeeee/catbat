@@ -2,6 +2,12 @@
 name = "catbat"
 version = "0.0.1"
 edition = "2021"
+license = "MIT"
+description = "cats the bat"
+homepage = "https://github.com/Dizeeee/catbat"
+repository = "https://github.com/Dizeeee/catbat"
+readme = "README.md"
+categories = ["command-line-utilities"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
