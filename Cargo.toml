@@ -9,6 +9,8 @@ repository = "https://github.com/Dizeeee/catbat"
 readme = "README.md"
 categories = ["command-line-utilities"]
 
+exclude = [".vscode"]
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
