@@ -1,26 +1,16 @@
+use core::fmt;
 use std::fs::{self, DirEntry};
 
 fn main() {
-    match fs::read_dir("/sys/class/power_supply") {
-        Ok(bat_paths) => {
-            for bat_path in bat_paths {
-                match bat_path {
-                    Ok(entry) => {
-                        // Battery::from(&entry).display();
-                        let power_supply = Battery::from(entry);
-                        match power_supply {
-                            Some(battery) => {
-                                battery.display();
-                            }
-                            _ => (),
-                        }
-                    }
-                    _ => (),
-                }
-            }
+    for bat_path in fs::read_dir("/sys/class/power_supply")
+        .into_iter()
+        .flatten()
+        .flatten()
+    {
+        if let Some(battery) = Battery::from(bat_path) {
+            println!("{}", battery);
         }
-        _ => (),
-    };
+    }
 }
 
 struct Battery {
@@ -30,33 +20,28 @@ struct Battery {
 
 impl Battery {
     fn from(path: DirEntry) -> Option<Self> {
-        // println!("{:?}", path);
-        match fs::read_dir(path.path()) {
-            Ok(entry) => {
-                let mut out: Option<Self> = None;
-                for e in entry {
-                    let entry = e.unwrap();
-                    match entry.path().file_name().unwrap().to_str().unwrap() {
-                        "capacity" => {
-                            // println!("{:?}", String::from_utf8(fs::read(entry.path()).unwrap()));
-                            out = Some(Battery {
-                                name: path.file_name().to_str().unwrap().into(),
-                                capacity: String::from_utf8(fs::read(entry.path()).unwrap())
-                                    .unwrap()
-                                    .trim_end_matches('\n')
-                                    .into(),
-                            });
-                        }
-                        _ => {}
-                    };
-                }
-                out
+        if let Ok(entry) = fs::read_dir(path.path()) {
+            let mut out: Option<Self> = None;
+            for e in entry.flatten() {
+                if e.path().file_name().unwrap().to_str().unwrap() == "capacity" {
+                    out = Some(Battery {
+                        name: path.file_name().to_str().unwrap().into(),
+                        capacity: fs::read_to_string(e.path())
+                            .unwrap()
+                            .trim_end_matches('\n')
+                            .into(),
+                    });
+                };
             }
-            _ => None,
+            out
+        } else {
+            None
         }
     }
+}
 
-    fn display(&self) {
-        println!("{}: {}%", self.name, self.capacity);
+impl fmt::Display for Battery {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}: {}%", self.name, self.capacity)
     }
 }
