@@ -24,6 +24,8 @@ fn main() {
 struct Battery {
     name: String,
     capacity: String,
+    manufacturer: String,
+    model_name: String,
 }
 
 impl Battery {
@@ -34,12 +36,26 @@ impl Battery {
                 .ok()?
                 .trim_end_matches('\n')
                 .into(),
+            manufacturer: fs::read_to_string(path.path().join("manufacturer"))
+                .unwrap_or_default()
+                .trim_end_matches('\n')
+                .into(),
+            model_name: fs::read_to_string(path.path().join("model_name"))
+                .unwrap_or_default()
+                .trim_end_matches('\n')
+                .into(),
         })
     }
 }
 
 impl fmt::Display for Battery {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}: {}%", self.name, self.capacity)
+        write!(
+            f,
+            "{}: {}% - {}",
+            self.name,
+            self.capacity,
+            format!("{} {}", self.manufacturer, self.model_name).trim()
+        )
     }
 }
